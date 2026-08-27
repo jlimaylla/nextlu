@@ -19,11 +19,6 @@ interface BrandFeature {
 export class AuthLayoutComponent {
   readonly features: BrandFeature[] = [
     {
-      icon: 'school',
-      title: 'Cursos y módulos estructurados',
-      desc: 'Organiza contenido con video, PDF, imágenes y archivos descargables',
-    },
-    {
       icon: 'quiz',
       title: 'Evaluaciones automáticas',
       desc: 'Banco de preguntas con calificación y retroalimentación instantánea',
