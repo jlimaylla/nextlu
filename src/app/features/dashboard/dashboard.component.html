@@ -1,7 +1,7 @@
 <app-page-header [title]="greeting()" subtitle="Panel de control" />
 
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-  @for (stat of stats; track stat.label) {
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  @for (stat of stats(); track stat.label) {
     <mat-card class="hover:shadow-md transition-shadow">
       <mat-card-content class="!p-5">
         <div class="flex items-center justify-between">
