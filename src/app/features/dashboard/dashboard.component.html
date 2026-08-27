@@ -1,0 +1,19 @@
+<app-page-header [title]="greeting()" subtitle="Panel de control" />
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+  @for (stat of stats; track stat.label) {
+    <mat-card class="hover:shadow-md transition-shadow">
+      <mat-card-content class="!p-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">{{ stat.label }}</p>
+            <p class="text-3xl font-bold text-[var(--mat-sys-on-surface)] mt-1">{{ stat.value }}</p>
+          </div>
+          <div [class]="'p-3 rounded-full ' + stat.chipClass">
+            <mat-icon class="!text-3xl">{{ stat.icon }}</mat-icon>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

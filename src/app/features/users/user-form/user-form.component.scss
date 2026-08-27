@@ -1,0 +1,22 @@
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// Ver course-form.component.scss — mismo truco: el grid ya estira ambas mat-card a la
+// misma altura, esto hace que el contenido interno también la ocupe (para anclar la
+// nota de "se le enviará un correo..." al pie en vez de dejarla pegada arriba).
+mat-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,40 @@
+<mat-toolbar class="!bg-[var(--mat-sys-surface-container)] border-b border-[var(--mat-sys-outline-variant)]">
+  <button mat-icon-button (click)="menuClick.emit()" aria-label="Alternar menú">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <span class="hidden md:block font-semibold text-[var(--mat-sys-primary)] ml-2">
+    Nextlu Platform
+  </span>
+
+  <span class="flex-1"></span>
+
+  <app-theme-toggle />
+
+  <button mat-icon-button aria-label="Notificaciones">
+    <mat-icon>notifications_none</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-menu #userMenu>
+  <div class="px-4 py-3 border-b border-[var(--mat-sys-outline-variant)]">
+    <p class="text-sm font-medium text-[var(--mat-sys-on-surface)]">
+      {{ auth.currentUser()?.displayName }}
+    </p>
+    <p class="text-xs text-[var(--mat-sys-on-surface-variant)] truncate">
+      {{ auth.currentUser()?.email }}
+    </p>
+  </div>
+  <button mat-menu-item>
+    <mat-icon>person_outline</mat-icon>
+    <span>Mi perfil</span>
+  </button>
+  <button mat-menu-item (click)="auth.logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Cerrar sesión</span>
+  </button>
+</mat-menu>

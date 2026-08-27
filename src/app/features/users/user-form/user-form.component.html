@@ -1,0 +1,83 @@
+<app-page-header
+  [title]="isEdit ? 'Editar usuario' : 'Nuevo usuario'"
+  subtitle="Datos del usuario"
+/>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <mat-card>
+      <mat-card-content class="!p-6 flex flex-col gap-4">
+        <h2 class="section-title">Cuenta</h2>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre completo</mat-label>
+          <input matInput formControlName="displayName" />
+          @if (form.get('displayName')?.errors?.['required'] && form.get('displayName')?.touched) {
+            <mat-error>El nombre es requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Correo electrónico</mat-label>
+          <input matInput formControlName="email" type="email" />
+          @if (isEdit) {
+            <mat-hint>El correo no se puede modificar</mat-hint>
+          }
+          @if (form.get('email')?.errors?.['email'] && form.get('email')?.touched) {
+            <mat-error>Ingresa un correo válido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Rol</mat-label>
+          <mat-select formControlName="role">
+            @for (opt of roleOptions; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-content class="!p-6 flex flex-col gap-4">
+        <h2 class="section-title">Ubicación organizacional</h2>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Área</mat-label>
+          <input matInput formControlName="area" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Cargo</mat-label>
+          <input matInput formControlName="position" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Sede</mat-label>
+          <input matInput formControlName="sede" />
+        </mat-form-field>
+
+        @if (!isEdit) {
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)] mt-auto pt-2">
+            Se le enviará un correo a esta dirección para que configure su propia contraseña.
+          </p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="flex items-center gap-3 mt-6">
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+      @if (isSaving()) {
+        <span class="flex items-center gap-2">
+          <mat-spinner diameter="18" />
+          Guardando...
+        </span>
+      } @else {
+        {{ isEdit ? 'Guardar cambios' : 'Crear usuario' }}
+      }
+    </button>
+    <a mat-button routerLink="/users">Cancelar</a>
+  </div>
+</form>

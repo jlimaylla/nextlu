@@ -1,0 +1,86 @@
+<app-page-header title="Inscribir participante" subtitle="Asigná una capacitación a un participante" />
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <mat-card>
+      <mat-card-content class="!p-6 flex flex-col gap-5">
+        <h2 class="section-title">Participante</h2>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Buscar por nombre o correo</mat-label>
+          <input
+            matInput
+            [formControl]="participantSearchCtrl"
+            [matAutocomplete]="auto"
+            placeholder="Ej. Juan Pérez"
+          />
+          <mat-autocomplete
+            #auto="matAutocomplete"
+            [displayWith]="displayParticipant"
+            (optionSelected)="onParticipantSelected($event)"
+          >
+            @for (u of filteredParticipants(); track u.id) {
+              <mat-option [value]="u">{{ u.displayName }} — {{ u.email }}</mat-option>
+            } @empty {
+              <mat-option disabled>Sin resultados</mat-option>
+            }
+          </mat-autocomplete>
+          @if (participants().length === 0) {
+            <mat-hint>No hay participantes activos en la empresa todavía</mat-hint>
+          } @else if (form.controls.userId.invalid && form.controls.userId.touched) {
+            <mat-error>Elegí un participante de la lista</mat-error>
+          }
+        </mat-form-field>
+
+        <p class="text-xs text-[var(--mat-sys-on-surface-variant)] mt-auto pt-2">
+          ¿No aparece quién buscás? Creálo primero desde
+          <a routerLink="/users/new" class="text-[var(--mat-sys-primary)] underline">Usuarios</a>.
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-content class="!p-6 flex flex-col gap-5">
+        <h2 class="section-title">Detalles de la inscripción</h2>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Capacitación</mat-label>
+          <mat-select formControlName="courseId">
+            @for (c of courses(); track c.id) {
+              <mat-option [value]="c.id">{{ c.title }}</mat-option>
+            }
+          </mat-select>
+          @if (courses().length === 0) {
+            <mat-hint>No hay capacitaciones publicadas todavía</mat-hint>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="REQUIRED">Obligatorio</mat-option>
+            <mat-option value="OPTIONAL">Opcional</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        @if (errorMessage()) {
+          <p class="text-sm text-[var(--mat-sys-error)]">{{ errorMessage() }}</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="flex items-center gap-3 mt-6">
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+      @if (isSaving()) {
+        <span class="flex items-center gap-2">
+          <mat-spinner diameter="18" />
+          Inscribiendo...
+        </span>
+      } @else {
+        Inscribir
+      }
+    </button>
+    <a mat-button routerLink="/enrollments">Cancelar</a>
+  </div>
+</form>

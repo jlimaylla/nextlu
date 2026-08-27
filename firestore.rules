@@ -1,0 +1,153 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Funciones auxiliares ───────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function getUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isAuth() && getUser().role == 'SUPER_ADMIN';
+    }
+
+    function isCompanyAdmin(companyId) {
+      return isAuth()
+        && getUser().role == 'COMPANY_ADMIN'
+        && getUser().companyId == companyId;
+    }
+
+    function isParticipant(companyId) {
+      return isAuth()
+        && getUser().role == 'PARTICIPANT'
+        && getUser().companyId == companyId;
+    }
+
+    function belongsToCompany(companyId) {
+      return isAuth() && getUser().companyId == companyId;
+    }
+
+    // ── companies ──────────────────────────────────────────────────────────
+    match /companies/{companyId} {
+      allow read: if isSuperAdmin() || belongsToCompany(companyId);
+      allow write: if isSuperAdmin();
+    }
+
+    // ── users ──────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isAuth() && (
+        isSuperAdmin() ||
+        request.auth.uid == userId ||
+        isCompanyAdmin(resource.data.companyId)
+      );
+      allow create: if isSuperAdmin() || isCompanyAdmin(request.resource.data.companyId);
+      allow update: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── courses ────────────────────────────────────────────────────────────
+    match /courses/{courseId} {
+      allow read: if isAuth() && (
+        isSuperAdmin() ||
+        isCompanyAdmin(resource.data.companyId) ||
+        isParticipant(resource.data.companyId)
+      );
+      allow create, update: if isCompanyAdmin(request.resource.data.companyId) || isSuperAdmin();
+      allow delete: if isCompanyAdmin(resource.data.companyId) || isSuperAdmin();
+    }
+
+    // ── course_modules y course_materials ──────────────────────────────────
+    // Nota: create/update validan contra request.resource.data (doc propuesto) y delete
+    // contra resource.data (doc existente) — en un delete, request.resource es null, así
+    // que una sola regla de "write" combinada deniega TODOS los deletes silenciosamente.
+    match /course_modules/{docId} {
+      allow read: if isAuth() && (isSuperAdmin() || belongsToCompany(resource.data.companyId));
+      allow create, update: if isAuth() && (isSuperAdmin() || isCompanyAdmin(request.resource.data.companyId));
+      allow delete: if isAuth() && (isSuperAdmin() || isCompanyAdmin(resource.data.companyId));
+    }
+
+    match /course_materials/{docId} {
+      allow read: if isAuth() && (isSuperAdmin() || belongsToCompany(resource.data.companyId));
+      allow create, update: if isAuth() && (isSuperAdmin() || isCompanyAdmin(request.resource.data.companyId));
+      allow delete: if isAuth() && (isSuperAdmin() || isCompanyAdmin(resource.data.companyId));
+    }
+
+    // ── enrollments ────────────────────────────────────────────────────────
+    match /enrollments/{docId} {
+      allow read: if isAuth() && (
+        isSuperAdmin() ||
+        isCompanyAdmin(resource.data.companyId) ||
+        (isParticipant(resource.data.companyId) && resource.data.userId == request.auth.uid)
+      );
+      allow create, update: if isAuth() && (
+        isSuperAdmin() ||
+        isCompanyAdmin(request.resource.data.companyId)
+      );
+      allow delete: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+    }
+
+    // ── progress ───────────────────────────────────────────────────────────
+    match /progress/{docId} {
+      allow read: if isAuth() && (
+        isSuperAdmin() ||
+        isCompanyAdmin(resource.data.companyId) ||
+        (belongsToCompany(resource.data.companyId) && resource.data.userId == request.auth.uid)
+      );
+      allow create, update: if isAuth() && (
+        isSuperAdmin() ||
+        isCompanyAdmin(request.resource.data.companyId) ||
+        request.resource.data.userId == request.auth.uid
+      );
+    }
+
+    // ── evaluations y questions ────────────────────────────────────────────
+    match /evaluations/{docId} {
+      allow read: if isAuth() && (isSuperAdmin() || belongsToCompany(resource.data.companyId));
+      allow create, update: if isSuperAdmin() || isCompanyAdmin(request.resource.data.companyId);
+      allow delete: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+    }
+
+    match /questions/{docId} {
+      allow read: if isAuth() && (isSuperAdmin() || belongsToCompany(resource.data.companyId));
+      allow create, update: if isSuperAdmin() || isCompanyAdmin(request.resource.data.companyId);
+      allow delete: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+    }
+
+    // ── exam_attempts ──────────────────────────────────────────────────────
+    match /exam_attempts/{docId} {
+      allow read: if isAuth() && (
+        isSuperAdmin() ||
+        isCompanyAdmin(resource.data.companyId) ||
+        (belongsToCompany(resource.data.companyId) && resource.data.userId == request.auth.uid)
+      );
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // ── certificates ───────────────────────────────────────────────────────
+    match /certificates/{docId} {
+      // Verificación pública por código (sin auth)
+      allow read: if true;
+      allow create, update: if isSuperAdmin() || isCompanyAdmin(request.resource.data.companyId);
+      allow delete: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+    }
+
+    // ── notifications ──────────────────────────────────────────────────────
+    match /notifications/{docId} {
+      allow read: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+      allow create, update: if isSuperAdmin() || isCompanyAdmin(request.resource.data.companyId);
+      allow delete: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+    }
+
+    // ── audit_logs (solo lectura para admins, escritura interna) ──────────
+    match /audit_logs/{docId} {
+      allow read: if isSuperAdmin() || isCompanyAdmin(resource.data.companyId);
+      allow create: if isAuth();
+      allow update, delete: if false;
+    }
+  }
+}

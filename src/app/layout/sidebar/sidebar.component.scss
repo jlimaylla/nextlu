@@ -1,0 +1,9 @@
+// El fondo/texto del item activo se pinta con clases Tailwind (ver sidebar.component.html),
+// pero el ícono y la etiqueta de mat-list-item toman su color de las custom properties de MDC,
+// que una clase Tailwind con !important en el <a> no puede pisar (no es un tema de cascada,
+// Material fija el color en el elemento interno vía var()). Se sobreescriben acá para que
+// el item activo se vea como el nav rail M3: pill de secondary-container + ícono/texto en tono.
+.nav-active {
+  --mdc-list-list-item-label-text-color: var(--mat-sys-on-secondary-container);
+  --mdc-list-list-item-leading-icon-color: var(--mat-sys-on-secondary-container);
+}

@@ -1,0 +1,179 @@
+@if (course(); as c) {
+  <app-page-header [title]="c.title" [subtitle]="categoryLabels[c.category]">
+    <a mat-stroked-button [routerLink]="['/courses', courseId, 'edit']">
+      <mat-icon>edit</mat-icon> Editar
+    </a>
+  </app-page-header>
+
+  <mat-tab-group animationDuration="150ms">
+    <!-- ── Información ── -->
+    <mat-tab label="Información">
+      <div class="max-w-2xl flex flex-col gap-4 mt-5">
+        <div class="flex items-center gap-3">
+          <app-status-badge [label]="statusLabels[c.status]" [variant]="statusVariant[c.status]" />
+          @if (c.isRequired) {
+            <app-status-badge label="Obligatoria" variant="info" />
+          }
+        </div>
+
+        <p class="text-sm text-[var(--mat-sys-on-surface-variant)] leading-relaxed">
+          {{ c.description }}
+        </p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div>
+            <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Duración</p>
+            <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ c.durationHours }} horas</p>
+          </div>
+          <div>
+            <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Vigencia</p>
+            <p class="font-medium text-[var(--mat-sys-on-surface)]">
+              {{ c.validityMonths ? c.validityMonths + ' meses' : 'Sin vencimiento' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Módulos</p>
+            <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ modules().length }}</p>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- ── Módulos y materiales ── -->
+    <mat-tab label="Módulos y materiales">
+      <div class="mt-5">
+        <div class="flex justify-end mb-3">
+          <button mat-stroked-button (click)="addModule()">
+            <mat-icon>add</mat-icon> Agregar módulo
+          </button>
+        </div>
+
+        @if (modules().length === 0) {
+          <div
+            class="flex flex-col items-center justify-center gap-2 py-14 text-center
+                   rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]"
+          >
+            <mat-icon class="!text-3xl !w-9 !h-9 text-[var(--mat-sys-on-surface-variant)]">
+              view_module
+            </mat-icon>
+            <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+              Todavía no hay módulos. Agrega el primero.
+            </p>
+          </div>
+        } @else {
+          <mat-accordion multi>
+            @for (module of modules(); track module.id; let i = $index, first = $first, last = $last) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>{{ i + 1 }}. {{ module.title }}</mat-panel-title>
+                  <mat-panel-description>
+                    {{ materialsOf(module.id).length }} material(es)
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+
+                <div class="flex justify-end gap-1 mb-2" (click)="$event.stopPropagation()">
+                  <button mat-icon-button [disabled]="first" (click)="moveModule(module, -1)" aria-label="Subir módulo">
+                    <mat-icon>arrow_upward</mat-icon>
+                  </button>
+                  <button mat-icon-button [disabled]="last" (click)="moveModule(module, 1)" aria-label="Bajar módulo">
+                    <mat-icon>arrow_downward</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="editModule(module)" aria-label="Editar módulo">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="removeModule(module)" aria-label="Eliminar módulo">
+                    <mat-icon class="!text-[var(--mat-sys-error)]">delete</mat-icon>
+                  </button>
+                </div>
+
+                @if (module.description) {
+                  <p class="text-sm text-[var(--mat-sys-on-surface-variant)] mb-3">
+                    {{ module.description }}
+                  </p>
+                }
+
+                <div class="flex flex-col gap-2">
+                  @for (material of materialsOf(module.id); track material.id) {
+                    <div
+                      class="flex items-center gap-3 px-3 py-2 rounded-xl
+                             bg-[var(--mat-sys-surface-container-highest)]"
+                    >
+                      <mat-icon class="text-[var(--mat-sys-on-surface-variant)] !text-xl">
+                        {{ materialIcons[material.type] }}
+                      </mat-icon>
+                      <a
+                        [href]="material.url"
+                        target="_blank"
+                        rel="noopener"
+                        class="flex-1 min-w-0 truncate text-sm text-[var(--mat-sys-on-surface)]"
+                      >
+                        {{ material.title }}
+                      </a>
+                      <button mat-icon-button (click)="editMaterial(material)" aria-label="Editar material">
+                        <mat-icon class="!text-lg">edit</mat-icon>
+                      </button>
+                      <button mat-icon-button (click)="removeMaterial(material)" aria-label="Eliminar material">
+                        <mat-icon class="!text-lg !text-[var(--mat-sys-error)]">delete</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <button mat-button class="mt-3" (click)="addMaterial(module)">
+                  <mat-icon>add</mat-icon> Agregar material
+                </button>
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- ── Participantes (Sprint 4, fuera de este alcance) ── -->
+    <mat-tab label="Participantes">
+      <p class="text-sm text-[var(--mat-sys-on-surface-variant)] mt-5">
+        Próximamente — inscripción y seguimiento de participantes.
+      </p>
+    </mat-tab>
+
+    <!-- ── Evaluaciones ── -->
+    <mat-tab label="Evaluaciones">
+      <div class="mt-5">
+        @if (evaluation(); as ev) {
+          <div
+            class="flex items-center justify-between gap-4 rounded-2xl border
+                   border-[var(--mat-sys-outline-variant)] p-4"
+          >
+            <div>
+              <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ ev.title }}</p>
+              <p class="text-xs text-[var(--mat-sys-on-surface-variant)] mt-0.5">
+                Nota mínima {{ ev.minPassScore }}% · {{ ev.timeLimitMinutes }} min ·
+                {{ ev.maxAttempts }} intento(s)
+              </p>
+            </div>
+            <a mat-stroked-button [routerLink]="['/evaluations', ev.id]">
+              <mat-icon>quiz</mat-icon> Ver evaluación
+            </a>
+          </div>
+        } @else {
+          <div
+            class="flex flex-col items-center justify-center gap-3 py-14 text-center
+                   rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]"
+          >
+            <mat-icon class="!text-3xl !w-9 !h-9 text-[var(--mat-sys-on-surface-variant)]">
+              quiz
+            </mat-icon>
+            <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+              Esta capacitación todavía no tiene una evaluación configurada.
+            </p>
+            <a mat-flat-button color="primary" [routerLink]="['/evaluations/new']" [queryParams]="{ courseId }">
+              <mat-icon>add</mat-icon> Configurar evaluación
+            </a>
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+} @else {
+  <app-loading-spinner />
+}

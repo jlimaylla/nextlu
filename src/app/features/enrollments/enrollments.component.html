@@ -1,0 +1,99 @@
+<app-page-header title="Participantes" subtitle="Inscripciones y asignaciones de cursos">
+  <button mat-stroked-button (click)="openBulkImportDialog()">
+    <mat-icon>upload</mat-icon> Carga masiva Excel
+  </button>
+  <a mat-flat-button color="primary" routerLink="new">
+    <mat-icon>person_add</mat-icon> Inscribir participante
+  </a>
+</app-page-header>
+
+<div class="flex flex-col sm:flex-row gap-3 mb-5">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 max-w-sm">
+    <mat-icon matPrefix class="!text-lg opacity-60">search</mat-icon>
+    <input
+      matInput
+      placeholder="Buscar participante..."
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
+    />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sm:w-64">
+    <mat-label>Capacitación</mat-label>
+    <mat-select [value]="courseFilter()" (selectionChange)="courseFilter.set($event.value)">
+      <mat-option value="ALL">Todas</mat-option>
+      @for (c of courses(); track c.id) {
+        <mat-option [value]="c.id">{{ c.title }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (rows().length === 0) {
+  <div
+    class="flex flex-col items-center justify-center gap-2 py-16 text-center
+           rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]"
+  >
+    <mat-icon class="!text-4xl !w-10 !h-10 text-[var(--mat-sys-on-surface-variant)]">
+      group_add
+    </mat-icon>
+    <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+      Todavía no hay inscripciones que coincidan.
+    </p>
+  </div>
+} @else {
+  <div class="overflow-x-auto rounded-2xl border border-[var(--mat-sys-outline-variant)]">
+    <table class="w-full text-sm">
+      <thead>
+        <tr
+          class="text-left text-xs text-[var(--mat-sys-on-surface-variant)]
+                 bg-[var(--mat-sys-surface-container)]"
+        >
+          <th class="px-4 py-3">Participante</th>
+          <th class="px-4 py-3">Capacitación</th>
+          <th class="px-4 py-3">Tipo</th>
+          <th class="px-4 py-3">Progreso</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.enrollment.id) {
+          <tr class="border-t border-[var(--mat-sys-outline-variant)]">
+            <td class="px-4 py-3">
+              <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ row.userName }}</p>
+              <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">{{ row.userEmail }}</p>
+            </td>
+            <td class="px-4 py-3 text-[var(--mat-sys-on-surface)]">{{ row.courseTitle }}</td>
+            <td class="px-4 py-3">
+              <app-status-badge
+                [label]="row.enrollment.type === 'REQUIRED' ? 'Obligatorio' : 'Opcional'"
+                [variant]="row.enrollment.type === 'REQUIRED' ? 'warning' : 'neutral'"
+              />
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2 min-w-32">
+                <div
+                  class="flex-1 h-1.5 rounded-full bg-[var(--mat-sys-surface-container-highest)]
+                         overflow-hidden"
+                >
+                  <div
+                    class="h-full bg-[var(--mat-sys-primary)]"
+                    [style.width.%]="row.enrollment.progressPercent"
+                  ></div>
+                </div>
+                <span class="text-xs text-[var(--mat-sys-on-surface-variant)]">
+                  {{ row.enrollment.progressPercent }}%
+                </span>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <button mat-icon-button (click)="unenroll(row.enrollment)" aria-label="Desinscribir">
+                <mat-icon class="!text-[var(--mat-sys-error)]">person_remove</mat-icon>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

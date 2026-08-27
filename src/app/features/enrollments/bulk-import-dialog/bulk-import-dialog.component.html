@@ -1,0 +1,127 @@
+<h2 mat-dialog-title>Carga masiva por Excel</h2>
+<div [formGroup]="form">
+  <mat-dialog-content class="flex flex-col gap-7 !pt-3">
+    <mat-form-field appearance="outline">
+      <mat-label>Capacitación</mat-label>
+      <mat-select formControlName="courseId">
+        @for (c of courses(); track c.id) {
+          <mat-option [value]="c.id">{{ c.title }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo</mat-label>
+      <mat-select formControlName="type">
+        <mat-option value="REQUIRED">Obligatorio</mat-option>
+        <mat-option value="OPTIONAL">Opcional</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div>
+      <input
+        #fileInput
+        type="file"
+        accept=".xlsx,.xls"
+        class="hidden"
+        (change)="onFileSelected($event)"
+      />
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="form.controls.courseId.invalid"
+        (click)="fileInput.click()"
+      >
+        <mat-icon>upload_file</mat-icon>
+        {{ fileName() || 'Elegir archivo .xlsx' }}
+      </button>
+      <p class="text-xs text-[var(--mat-sys-on-surface-variant)] mt-1.5">
+        @if (form.controls.courseId.invalid) {
+          Primero elegí la capacitación.
+        } @else {
+          El archivo debe tener una columna llamada <strong>email</strong>.
+        }
+      </p>
+    </div>
+
+    @if (isParsing()) {
+      <div class="flex items-center gap-2 text-sm text-[var(--mat-sys-on-surface-variant)]">
+        <mat-spinner diameter="18" /> Leyendo archivo...
+      </div>
+    }
+
+    @if (parseError()) {
+      <p class="text-sm text-[var(--mat-sys-error)]">{{ parseError() }}</p>
+    }
+
+    @if (rows().length > 0) {
+      <div class="flex gap-2 flex-wrap">
+        <span
+          class="text-xs px-2.5 py-1 rounded-full
+                 bg-[var(--mat-sys-tertiary-container)] text-[var(--mat-sys-on-tertiary-container)]"
+        >
+          {{ matchedCount() }} para inscribir
+        </span>
+        <span
+          class="text-xs px-2.5 py-1 rounded-full
+                 bg-[var(--mat-sys-surface-container-highest)] text-[var(--mat-sys-on-surface-variant)]"
+        >
+          {{ rows().length - matchedCount() }} omitidos
+        </span>
+      </div>
+
+      <div class="max-h-56 overflow-y-auto rounded-xl border border-[var(--mat-sys-outline-variant)]">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs text-[var(--mat-sys-on-surface-variant)]">
+              <th class="px-3 py-2">Email</th>
+              <th class="px-3 py-2">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.email) {
+              <tr class="border-t border-[var(--mat-sys-outline-variant)]">
+                <td class="px-3 py-2 text-[var(--mat-sys-on-surface)]">{{ row.email }}</td>
+                <td class="px-3 py-2">
+                  @switch (row.status) {
+                    @case ('matched') {
+                      <span class="text-[var(--mat-sys-tertiary)]">
+                        {{ row.displayName }} — se inscribirá
+                      </span>
+                    }
+                    @case ('already_enrolled') {
+                      <span class="text-[var(--mat-sys-on-surface-variant)]">Ya estaba inscrito</span>
+                    }
+                    @case ('not_found') {
+                      <span class="text-[var(--mat-sys-error)]">
+                        No existe un participante con este correo
+                      </span>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancelar</button>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="matchedCount() === 0 || isImporting()"
+      (click)="confirmImport()"
+    >
+      @if (isImporting()) {
+        <span class="flex items-center gap-2">
+          <mat-spinner diameter="18" /> Inscribiendo...
+        </span>
+      } @else {
+        Inscribir {{ matchedCount() }} participante(s)
+      }
+    </button>
+  </mat-dialog-actions>
+</div>

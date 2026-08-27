@@ -1,0 +1,152 @@
+<!-- Encabezado -->
+<div class="mb-8">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+    Bienvenido de nuevo
+  </h1>
+  <p class="text-gray-500 dark:text-gray-400 mt-1.5 text-sm">
+    Ingresa tus credenciales para acceder a tu cuenta
+  </p>
+</div>
+
+<!-- Formulario -->
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5" novalidate>
+
+  <!-- Email -->
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Correo electrónico</mat-label>
+    <mat-icon matPrefix class="field-icon">alternate_email</mat-icon>
+    <input
+      matInput
+      formControlName="email"
+      type="email"
+      autocomplete="email"
+      placeholder="nombre@empresa.com"
+    />
+    @if (form.get('email')?.errors?.['required'] && form.get('email')?.touched) {
+      <mat-error>El correo es requerido</mat-error>
+    }
+    @if (form.get('email')?.errors?.['email'] && form.get('email')?.touched) {
+      <mat-error>Ingresa un correo válido</mat-error>
+    }
+  </mat-form-field>
+
+  <!-- Contraseña -->
+  <div class="flex flex-col gap-1.5">
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Contraseña</mat-label>
+      <mat-icon matPrefix class="field-icon">lock_outline</mat-icon>
+      <input
+        matInput
+        formControlName="password"
+        [type]="hidePassword() ? 'password' : 'text'"
+        autocomplete="current-password"
+        placeholder="••••••••"
+      />
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="hidePassword.set(!hidePassword())"
+        [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+      >
+        <mat-icon class="field-icon">
+          {{ hidePassword() ? 'visibility_off' : 'visibility' }}
+        </mat-icon>
+      </button>
+      @if (form.get('password')?.errors?.['required'] && form.get('password')?.touched) {
+        <mat-error>La contraseña es requerida</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="flex justify-end">
+      <a
+        [routerLink]="['/auth/forgot-password']"
+        class="text-xs font-medium text-primary-600 dark:text-primary-400
+               hover:text-primary-800 dark:hover:text-primary-200 transition-colors"
+      >
+        ¿Olvidaste tu contraseña?
+      </a>
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (errorMessage()) {
+    <div class="error-alert flex items-center gap-3 px-4 py-3 rounded-xl border
+                bg-[var(--mat-sys-error-container)] border-[var(--mat-sys-error)]/30
+                text-[var(--mat-sys-on-error-container)]">
+      <mat-icon class="!text-lg flex-shrink-0">error_outline</mat-icon>
+      <span class="text-sm">{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- Submit -->
+  <button
+    mat-flat-button
+    color="primary"
+    type="submit"
+    [disabled]="isLoading()"
+    class="submit-btn w-full !mt-1"
+  >
+    @if (isLoading()) {
+      <span class="flex items-center justify-center gap-2.5">
+        <mat-spinner diameter="18" />
+        <span>Verificando...</span>
+      </span>
+    } @else {
+      <span class="flex items-center justify-center gap-2">
+        <span>Iniciar Sesión</span>
+        <mat-icon class="!text-[18px]">arrow_forward</mat-icon>
+      </span>
+    }
+  </button>
+
+</form>
+
+<!-- ── Panel de desarrollo (solo visible en environment.production = false) ── -->
+@if (isDev) {
+  <div class="dev-panel mt-6">
+
+    <!-- Separador con badge -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="h-px flex-1 bg-amber-200 dark:bg-amber-700/40"></div>
+      <span class="dev-badge">
+        <mat-icon class="!text-[11px] !w-3 !h-3 !leading-none">code</mat-icon>
+        MODO DEV
+      </span>
+      <div class="h-px flex-1 bg-amber-200 dark:bg-amber-700/40"></div>
+    </div>
+
+    <p class="text-[11px] text-center text-amber-700/70 dark:text-amber-400/60 mb-3 tracking-wide">
+      Acceso rápido por rol · No visible en producción
+    </p>
+
+    <!-- Botones de rol -->
+    <div class="grid grid-cols-3 gap-2">
+      @for (cred of devCredentials; track cred.role) {
+        <button
+          type="button"
+          (click)="devLogin(cred.email, cred.password)"
+          [disabled]="isLoading()"
+          [matTooltip]="cred.email"
+          matTooltipPosition="above"
+          class="dev-role-btn flex flex-col items-center gap-1 py-2.5 px-2
+                 rounded-xl border border-dashed border-amber-300 dark:border-amber-700/50
+                 bg-amber-50/80 dark:bg-amber-950/20
+                 text-amber-700 dark:text-amber-400
+                 hover:bg-amber-100 dark:hover:bg-amber-900/30
+                 hover:border-amber-400 dark:hover:border-amber-600
+                 disabled:opacity-40 disabled:cursor-not-allowed
+                 transition-all duration-150 cursor-pointer group"
+        >
+          <mat-icon class="!text-xl group-hover:scale-110 transition-transform">
+            {{ cred.icon }}
+          </mat-icon>
+          <span class="text-[10px] font-semibold leading-tight text-center">
+            {{ cred.label }}
+          </span>
+        </button>
+      }
+    </div>
+
+  </div>
+}

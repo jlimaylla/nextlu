@@ -1,0 +1,24 @@
+<div class="flex flex-col h-full bg-[var(--mat-sys-surface-container)] border-r border-[var(--mat-sys-outline-variant)]">
+  <!-- Logo -->
+  <div class="flex items-center gap-2 px-4 py-5 border-b border-[var(--mat-sys-outline-variant)]">
+    <mat-icon class="text-[var(--mat-sys-primary)]">school</mat-icon>
+    <span class="font-bold text-[var(--mat-sys-on-surface)] text-lg">Nextlu Platform</span>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto py-2">
+    <mat-nav-list>
+      @for (item of navItems(); track item.route) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="nav-active !bg-[var(--mat-sys-secondary-container)] !text-[var(--mat-sys-on-secondary-container)]"
+          class="mx-2 !rounded-lg my-0.5"
+        >
+          <mat-icon matListItemIcon class="text-[var(--mat-sys-on-surface-variant)]">{{ item.icon }}</mat-icon>
+          <span matListItemTitle class="text-[var(--mat-sys-on-surface-variant)]">{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </nav>
+</div>

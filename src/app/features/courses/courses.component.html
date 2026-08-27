@@ -1,0 +1,97 @@
+<app-page-header title="Capacitaciones" subtitle="Gestión del catálogo de cursos">
+  <a mat-flat-button color="primary" routerLink="new">
+    <mat-icon>add</mat-icon> Nueva capacitación
+  </a>
+</app-page-header>
+
+<!-- Filtros -->
+<div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 max-w-sm">
+    <mat-icon matPrefix class="!text-lg opacity-60">search</mat-icon>
+    <input matInput placeholder="Buscar por título..." [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)" />
+  </mat-form-field>
+
+  <mat-button-toggle-group [value]="statusFilter()" (change)="statusFilter.set($event.value)"
+    aria-label="Filtrar por estado">
+    <mat-button-toggle value="ALL">Todos</mat-button-toggle>
+    <mat-button-toggle value="DRAFT">{{ statusLabels.DRAFT }}</mat-button-toggle>
+    <mat-button-toggle value="PUBLISHED">{{ statusLabels.PUBLISHED }}</mat-button-toggle>
+    <mat-button-toggle value="FINISHED">{{ statusLabels.FINISHED }}</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+
+<!-- Catálogo -->
+@if (filteredCourses().length === 0) {
+<div class="empty-state flex flex-col items-center justify-center gap-3 py-16 text-center
+           rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]">
+  <mat-icon class="!text-4xl !w-10 !h-10 text-[var(--mat-sys-on-surface-variant)]">school</mat-icon>
+  <p class="text-[var(--mat-sys-on-surface-variant)] text-sm">
+    No hay capacitaciones que coincidan con el filtro.
+  </p>
+</div>
+} @else {
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  @for (course of filteredCourses(); track course.id) {
+  <mat-card class="course-card cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
+    [routerLink]="[course.id]">
+    <div class="cover" [class.has-image]="!!course.coverUrl"
+      [style.background-image]="course.coverUrl ? 'url(' + course.coverUrl + ')' : null">
+      @if (!course.coverUrl) {
+      <mat-icon>school</mat-icon>
+      }
+    </div>
+
+    <mat-card-content class="!p-4">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">
+            {{ categoryLabels[course.category] }}
+          </p>
+          <h3 class="font-semibold text-[var(--mat-sys-on-surface)] truncate" [title]="course.title">
+            {{ course.title }}
+          </h3>
+        </div>
+
+        <button mat-icon-button [matMenuTriggerFor]="menu" (click)="$event.stopPropagation()"
+          aria-label="Acciones de la capacitación">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <a mat-menu-item [routerLink]="[course.id, 'edit']" (click)="$event.stopPropagation()">
+            <mat-icon>edit</mat-icon><span>Editar</span>
+          </a>
+          <button mat-menu-item (click)="$event.stopPropagation(); duplicate(course)">
+            <mat-icon>content_copy</mat-icon><span>Duplicar</span>
+          </button>
+          @if (course.status === 'DRAFT') {
+          <button mat-menu-item (click)="$event.stopPropagation(); publish(course)">
+            <mat-icon>publish</mat-icon><span>Publicar</span>
+          </button>
+          } @else if (course.status === 'PUBLISHED') {
+          <button mat-menu-item (click)="$event.stopPropagation(); unpublish(course)">
+            <mat-icon>unpublished</mat-icon><span>Despublicar</span>
+          </button>
+          }
+          <button mat-menu-item class="!text-[var(--mat-sys-error)]" (click)="$event.stopPropagation(); remove(course)">
+            <mat-icon class="!text-[var(--mat-sys-error)]">delete</mat-icon><span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <p class="text-sm text-[var(--mat-sys-on-surface-variant)] mt-2 line-clamp-2 min-h-10">
+        {{ course.description }}
+      </p>
+
+      <div class="flex items-center justify-between mt-4">
+        <app-status-badge [label]="statusLabels[course.status]" [variant]="statusVariant[course.status]" />
+        <span class="text-xs text-[var(--mat-sys-on-surface-variant)] flex items-center gap-1">
+          <mat-icon class="!text-sm !w-4 !h-4">schedule</mat-icon>
+          {{ course.durationHours }} h
+        </span>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  }
+</div>
+}

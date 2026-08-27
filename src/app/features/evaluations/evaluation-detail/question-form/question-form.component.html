@@ -1,0 +1,87 @@
+<app-page-header
+  [title]="isEdit ? 'Editar pregunta' : 'Nueva pregunta'"
+  subtitle="Banco de preguntas"
+/>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <mat-card>
+      <mat-card-content class="!p-6 flex flex-col gap-5">
+        <h2 class="section-title">Pregunta</h2>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de pregunta</mat-label>
+          <mat-select [value]="typeCtrl.value" (selectionChange)="onTypeChange($event.value)">
+            <mat-option value="MULTIPLE_CHOICE">Opción múltiple</mat-option>
+            <mat-option value="TRUE_FALSE">Verdadero / Falso</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Enunciado</mat-label>
+          <textarea matInput formControlName="text" rows="5"></textarea>
+          @if (form.controls.text.errors?.['required'] && form.controls.text.touched) {
+            <mat-error>El enunciado es requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <p class="text-xs text-[var(--mat-sys-on-surface-variant)] mt-auto pt-2">
+          Elegí el tipo antes de cargar las opciones — cambiarlo después reinicia la lista.
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-content class="!p-6 flex flex-col gap-4">
+        <h2 class="section-title">Opciones</h2>
+        <p class="text-xs text-[var(--mat-sys-on-surface-variant)] -mt-2">
+          Marcá cuál es la respuesta correcta
+        </p>
+
+        <mat-radio-group [formControl]="form.controls.correctOptionIndex" class="flex flex-col gap-3">
+          @for (option of options.controls; track $index) {
+            <div class="flex items-center gap-2">
+              <mat-radio-button [value]="$index" />
+              @if (isMultipleChoice) {
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
+                  <input matInput [formControl]="option" [placeholder]="'Opción ' + ($index + 1)" />
+                </mat-form-field>
+                <button
+                  mat-icon-button
+                  type="button"
+                  [disabled]="options.length <= 2"
+                  (click)="removeOption($index)"
+                  aria-label="Quitar opción"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              } @else {
+                <span class="text-sm text-[var(--mat-sys-on-surface)]">{{ option.value }}</span>
+              }
+            </div>
+          }
+        </mat-radio-group>
+
+        @if (isMultipleChoice) {
+          <button mat-button type="button" class="self-start" (click)="addOption()">
+            <mat-icon>add</mat-icon> Agregar opción
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="flex items-center gap-3 mt-6">
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+      @if (isSaving()) {
+        <span class="flex items-center gap-2">
+          <mat-spinner diameter="18" />
+          Guardando...
+        </span>
+      } @else {
+        {{ isEdit ? 'Guardar cambios' : 'Crear pregunta' }}
+      }
+    </button>
+    <a mat-button [routerLink]="['/evaluations', evaluationId]">Cancelar</a>
+  </div>
+</form>

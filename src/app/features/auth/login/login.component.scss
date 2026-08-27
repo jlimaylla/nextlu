@@ -1,0 +1,67 @@
+:host {
+  display: block;
+  animation: fadeSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+// ── Submit button ─────────────────────────────────────────────────────────────
+
+.submit-btn {
+  height: 52px !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+
+  &:not([disabled]):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -4px rgba(25, 118, 210, 0.45) !important;
+  }
+
+  &:not([disabled]):active {
+    transform: translateY(0);
+  }
+}
+
+// ── Field icons ───────────────────────────────────────────────────────────────
+
+.field-icon {
+  color: var(--mat-sys-outline) !important;
+  font-size: 20px !important;
+}
+
+// ── Error con animación shake ─────────────────────────────────────────────────
+
+.error-alert {
+  animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+// ── Panel de desarrollo ───────────────────────────────────────────────────────
+
+.dev-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background-color: #d97706;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px 3px 6px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+// ── Animaciones ───────────────────────────────────────────────────────────────
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  10%, 90%  { transform: translateX(-2px); }
+  20%, 80%  { transform: translateX(4px);  }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60%  { transform: translateX(6px);  }
+}

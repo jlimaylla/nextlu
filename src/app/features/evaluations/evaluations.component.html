@@ -1,0 +1,71 @@
+<app-page-header title="Evaluaciones" subtitle="Banco de preguntas y resultados">
+  <a mat-flat-button color="primary" routerLink="new">
+    <mat-icon>add</mat-icon> Nueva evaluación
+  </a>
+</app-page-header>
+
+@if (rows().length === 0) {
+  <div
+    class="flex flex-col items-center justify-center gap-2 py-16 text-center
+           rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]"
+  >
+    <mat-icon class="!text-4xl !w-10 !h-10 text-[var(--mat-sys-on-surface-variant)]">quiz</mat-icon>
+    <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+      Todavía no hay evaluaciones configuradas.
+    </p>
+  </div>
+} @else {
+  <div class="overflow-x-auto rounded-2xl border border-[var(--mat-sys-outline-variant)]">
+    <table class="w-full text-sm">
+      <thead>
+        <tr
+          class="text-left text-xs text-[var(--mat-sys-on-surface-variant)]
+                 bg-[var(--mat-sys-surface-container)]"
+        >
+          <th class="px-4 py-3">Evaluación</th>
+          <th class="px-4 py-3">Nota mínima</th>
+          <th class="px-4 py-3">Tiempo límite</th>
+          <th class="px-4 py-3">Intentos</th>
+          <th class="px-4 py-3">Preguntas</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.evaluation.id) {
+          <tr
+            class="border-t border-[var(--mat-sys-outline-variant)] cursor-pointer
+                   hover:bg-[var(--mat-sys-surface-container)]"
+            [routerLink]="[row.evaluation.id]"
+          >
+            <td class="px-4 py-3">
+              <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ row.evaluation.title }}</p>
+              <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">{{ row.courseTitle }}</p>
+            </td>
+            <td class="px-4 py-3">{{ row.evaluation.minPassScore }}%</td>
+            <td class="px-4 py-3">{{ row.evaluation.timeLimitMinutes }} min</td>
+            <td class="px-4 py-3">{{ row.evaluation.maxAttempts }}</td>
+            <td class="px-4 py-3">{{ row.questionCount }}</td>
+            <td class="px-4 py-3 text-right">
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="menu"
+                (click)="$event.stopPropagation()"
+                aria-label="Acciones"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <a mat-menu-item [routerLink]="[row.evaluation.id, 'edit']" (click)="$event.stopPropagation()">
+                  <mat-icon>edit</mat-icon><span>Editar configuración</span>
+                </a>
+                <button mat-menu-item (click)="$event.stopPropagation(); remove(row.evaluation)">
+                  <mat-icon class="!text-[var(--mat-sys-error)]">delete</mat-icon><span>Eliminar</span>
+                </button>
+              </mat-menu>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,31 @@
+.stat-tile {
+  padding: 1.25rem;
+  border-radius: 1rem;
+}
+
+.stat-label {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+.section-card {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface);
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 1rem;
+}

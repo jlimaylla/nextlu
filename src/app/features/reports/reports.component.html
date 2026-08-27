@@ -1,0 +1,151 @@
+<app-page-header title="Reportes" subtitle="Métricas de capacitación y cumplimiento">
+  <button
+    mat-stroked-button
+    disabled
+    matTooltip="Próximamente — por ahora exportá a Excel"
+  >
+    <mat-icon>picture_as_pdf</mat-icon> Exportar PDF
+  </button>
+  <button mat-flat-button color="primary" [disabled]="isExporting()" (click)="exportExcel()">
+    <mat-icon>download</mat-icon>
+    {{ isExporting() ? 'Generando...' : 'Exportar Excel' }}
+  </button>
+</app-page-header>
+
+<!-- ── Capacitación ── -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+  <div class="stat-tile bg-[var(--mat-sys-primary-container)] text-[var(--mat-sys-on-primary-container)]">
+    <p class="stat-label">Capacitaciones publicadas</p>
+    <p class="stat-value">{{ kpis().totalCourses }}</p>
+  </div>
+  <div class="stat-tile bg-[var(--mat-sys-secondary-container)] text-[var(--mat-sys-on-secondary-container)]">
+    <p class="stat-label">Participantes</p>
+    <p class="stat-value">{{ kpis().totalParticipants }}</p>
+  </div>
+  <div class="stat-tile bg-[var(--mat-sys-tertiary-container)] text-[var(--mat-sys-on-tertiary-container)]">
+    <p class="stat-label">Inscripciones</p>
+    <p class="stat-value">{{ kpis().totalEnrollments }}</p>
+  </div>
+  <div
+    class="stat-tile bg-[var(--mat-sys-surface-container-highest)] text-[var(--mat-sys-on-surface)]"
+  >
+    <p class="stat-label">Evaluaciones configuradas</p>
+    <p class="stat-value">{{ kpis().totalEvaluations }}</p>
+  </div>
+</div>
+
+<!-- ── Cumplimiento ── -->
+<div class="section-card mb-6">
+  <h2 class="section-title">Cumplimiento</h2>
+
+  <div class="flex items-center gap-4 mb-4">
+    <p class="text-3xl font-bold text-[var(--mat-sys-on-surface)]">
+      {{ complianceRate() !== null ? complianceRate() + '%' : '—' }}
+    </p>
+    <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">de las inscripciones completadas</p>
+  </div>
+
+  <div class="h-2 rounded-full bg-[var(--mat-sys-surface-container-highest)] overflow-hidden flex mb-4">
+    @if (compliance().total > 0) {
+      <div
+        class="h-full bg-[var(--mat-sys-tertiary)]"
+        [style.width.%]="(compliance().completed / compliance().total) * 100"
+      ></div>
+      <div
+        class="h-full bg-[var(--mat-sys-error)]"
+        [style.width.%]="(compliance().expired / compliance().total) * 100"
+      ></div>
+    }
+  </div>
+
+  <div class="grid grid-cols-3 gap-4 text-sm">
+    <div>
+      <p class="flex items-center gap-1.5 text-[var(--mat-sys-on-surface-variant)]">
+        <span class="w-2 h-2 rounded-full bg-[var(--mat-sys-tertiary)]"></span> Completadas
+      </p>
+      <p class="font-semibold text-[var(--mat-sys-on-surface)] mt-0.5">{{ compliance().completed }}</p>
+    </div>
+    <div>
+      <p class="flex items-center gap-1.5 text-[var(--mat-sys-on-surface-variant)]">
+        <span class="w-2 h-2 rounded-full bg-[var(--mat-sys-outline)]"></span> Pendientes
+      </p>
+      <p class="font-semibold text-[var(--mat-sys-on-surface)] mt-0.5">{{ compliance().pending }}</p>
+    </div>
+    <div>
+      <p class="flex items-center gap-1.5 text-[var(--mat-sys-on-surface-variant)]">
+        <span class="w-2 h-2 rounded-full bg-[var(--mat-sys-error)]"></span> Vencidas
+      </p>
+      <p class="font-semibold text-[var(--mat-sys-on-surface)] mt-0.5">{{ compliance().expired }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- ── Cumplimiento y horas por área ── -->
+  <div class="section-card">
+    <h2 class="section-title">Cumplimiento y horas por área</h2>
+
+    @if (areaBreakdown().length === 0) {
+      <p class="text-sm text-[var(--mat-sys-on-surface-variant)] py-6 text-center">
+        Todavía no hay inscripciones para agrupar por área.
+      </p>
+    } @else {
+      <div class="overflow-x-auto -mx-1">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs text-[var(--mat-sys-on-surface-variant)]">
+              <th class="px-1 py-2">Área</th>
+              <th class="px-1 py-2">Asignados</th>
+              <th class="px-1 py-2">Cumplimiento</th>
+              <th class="px-1 py-2">Horas</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of areaBreakdown(); track row.area) {
+              <tr class="border-t border-[var(--mat-sys-outline-variant)]">
+                <td class="px-1 py-2 text-[var(--mat-sys-on-surface)]">{{ row.area }}</td>
+                <td class="px-1 py-2">{{ row.assigned }}</td>
+                <td class="px-1 py-2">
+                  {{ row.assigned ? ((row.completed / row.assigned) * 100 | number: '1.0-0') : 0 }}%
+                </td>
+                <td class="px-1 py-2">{{ row.hours }} h</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- ── Evaluaciones ── -->
+  <div class="section-card">
+    <h2 class="section-title">Evaluaciones</h2>
+
+    @if (evaluationStats().total === 0) {
+      <p class="text-sm text-[var(--mat-sys-on-surface-variant)] py-6 text-center">
+        Todavía nadie rindió una evaluación.
+      </p>
+    } @else {
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Promedio general</p>
+          <p class="text-xl font-bold text-[var(--mat-sys-on-surface)] mt-1">
+            {{ evaluationStats().averageScore }}%
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Tasa de aprobación</p>
+          <p class="text-xl font-bold text-[var(--mat-sys-on-surface)] mt-1">
+            {{ evaluationStats().passRate }}%
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Total de intentos</p>
+          <p class="text-xl font-bold text-[var(--mat-sys-on-surface)] mt-1">
+            {{ evaluationStats().total }}
+          </p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

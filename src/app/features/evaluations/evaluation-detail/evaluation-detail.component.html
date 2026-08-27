@@ -1,0 +1,198 @@
+@if (evaluation(); as e) {
+  <app-page-header [title]="e.title" [subtitle]="courseTitle()">
+    <a mat-stroked-button [routerLink]="['/evaluations', evaluationId, 'edit']">
+      <mat-icon>edit</mat-icon> Editar configuración
+    </a>
+  </app-page-header>
+
+  <mat-tab-group animationDuration="150ms">
+    <!-- ── Configuración ── -->
+    <mat-tab label="Configuración">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 max-w-3xl">
+        <div>
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Nota mínima</p>
+          <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ e.minPassScore }}%</p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Tiempo límite</p>
+          <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ e.timeLimitMinutes }} min</p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Intentos permitidos</p>
+          <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ e.maxAttempts }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Preguntas</p>
+          <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ questions().length }}</p>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- ── Preguntas ── -->
+    <mat-tab label="Preguntas">
+      <div class="mt-5">
+        <div class="flex justify-end mb-3">
+          <a mat-stroked-button [routerLink]="['/evaluations', evaluationId, 'questions', 'new']">
+            <mat-icon>add</mat-icon> Agregar pregunta
+          </a>
+        </div>
+
+        @if (questions().length === 0) {
+          <div
+            class="flex flex-col items-center justify-center gap-2 py-14 text-center
+                   rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]"
+          >
+            <mat-icon class="!text-3xl !w-9 !h-9 text-[var(--mat-sys-on-surface-variant)]">
+              help_outline
+            </mat-icon>
+            <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+              Todavía no hay preguntas. Agregá la primera.
+            </p>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-3">
+            @for (q of questions(); track q.id; let i = $index, first = $first, last = $last) {
+              <div
+                class="rounded-2xl border border-[var(--mat-sys-outline-variant)] p-4
+                       bg-[var(--mat-sys-surface-container)]"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-start gap-2 min-w-0">
+                    <span
+                      class="text-xs font-semibold rounded-full px-2 py-0.5 shrink-0
+                             bg-[var(--mat-sys-secondary-container)] text-[var(--mat-sys-on-secondary-container)]"
+                    >
+                      {{ i + 1 }}
+                    </span>
+                    <div class="min-w-0">
+                      <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">
+                        {{ q.type === 'MULTIPLE_CHOICE' ? 'Opción múltiple' : 'Verdadero / Falso' }}
+                      </p>
+                      <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ q.text }}</p>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-1 shrink-0">
+                    <button mat-icon-button [disabled]="first" (click)="moveQuestion(q, -1)" aria-label="Subir">
+                      <mat-icon>arrow_upward</mat-icon>
+                    </button>
+                    <button mat-icon-button [disabled]="last" (click)="moveQuestion(q, 1)" aria-label="Bajar">
+                      <mat-icon>arrow_downward</mat-icon>
+                    </button>
+                    <a
+                      mat-icon-button
+                      [routerLink]="['/evaluations', evaluationId, 'questions', q.id, 'edit']"
+                      aria-label="Editar"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </a>
+                    <button mat-icon-button (click)="removeQuestion(q)" aria-label="Eliminar">
+                      <mat-icon class="!text-[var(--mat-sys-error)]">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-3 ml-8">
+                  @for (option of q.options; track $index) {
+                    <div class="flex items-center gap-2 text-sm">
+                      <mat-icon
+                        [class]="
+                          '!text-base !w-4 !h-4 ' +
+                          ($index === q.correctOptionIndex
+                            ? 'text-[var(--mat-sys-tertiary)]'
+                            : 'text-[var(--mat-sys-on-surface-variant)]')
+                        "
+                      >
+                        {{ $index === q.correctOptionIndex ? 'check_circle' : 'radio_button_unchecked' }}
+                      </mat-icon>
+                      <span
+                        [class]="
+                          $index === q.correctOptionIndex
+                            ? 'font-medium text-[var(--mat-sys-on-surface)]'
+                            : 'text-[var(--mat-sys-on-surface-variant)]'
+                        "
+                      >
+                        {{ option }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- ── Resultados ── -->
+    <mat-tab label="Resultados">
+      <div class="mt-5 flex flex-col gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="rounded-2xl border border-[var(--mat-sys-outline-variant)] p-4">
+            <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Promedio general</p>
+            <p class="text-2xl font-bold text-[var(--mat-sys-on-surface)] mt-1">
+              {{ averageScore() !== null ? averageScore() + '%' : '—' }}
+            </p>
+          </div>
+          <div class="rounded-2xl border border-[var(--mat-sys-outline-variant)] p-4">
+            <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Tasa de aprobación</p>
+            <p class="text-2xl font-bold text-[var(--mat-sys-on-surface)] mt-1">
+              {{ passRate() !== null ? passRate() + '%' : '—' }}
+            </p>
+          </div>
+          <div class="rounded-2xl border border-[var(--mat-sys-outline-variant)] p-4">
+            <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">Total de intentos</p>
+            <p class="text-2xl font-bold text-[var(--mat-sys-on-surface)] mt-1">{{ attempts().length }}</p>
+          </div>
+        </div>
+
+        @if (attempts().length === 0) {
+          <div
+            class="flex flex-col items-center justify-center gap-2 py-14 text-center
+                   rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]"
+          >
+            <mat-icon class="!text-3xl !w-9 !h-9 text-[var(--mat-sys-on-surface-variant)]">
+              fact_check
+            </mat-icon>
+            <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+              Todavía nadie rindió esta evaluación.
+            </p>
+          </div>
+        } @else {
+          <div class="overflow-x-auto rounded-2xl border border-[var(--mat-sys-outline-variant)]">
+            <table class="w-full text-sm">
+              <thead>
+                <tr
+                  class="text-left text-xs text-[var(--mat-sys-on-surface-variant)]
+                         bg-[var(--mat-sys-surface-container)]"
+                >
+                  <th class="px-4 py-3">Participante</th>
+                  <th class="px-4 py-3">Intento</th>
+                  <th class="px-4 py-3">Nota</th>
+                  <th class="px-4 py-3">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of attempts(); track row.attempt.id) {
+                  <tr class="border-t border-[var(--mat-sys-outline-variant)]">
+                    <td class="px-4 py-3 text-[var(--mat-sys-on-surface)]">{{ row.userName }}</td>
+                    <td class="px-4 py-3">#{{ row.attempt.attemptNumber }}</td>
+                    <td class="px-4 py-3">{{ row.attempt.score }}%</td>
+                    <td class="px-4 py-3">
+                      <app-status-badge
+                        [label]="row.attempt.status === 'PASSED' ? 'Aprobado' : 'Desaprobado'"
+                        [variant]="row.attempt.status === 'PASSED' ? 'success' : 'error'"
+                      />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+} @else {
+  <app-loading-spinner />
+}

@@ -1,0 +1,46 @@
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+}
+
+// ── Panel de marca ────────────────────────────────────────────────────────────
+
+.brand-panel {
+  background: linear-gradient(145deg, #0d2d6b 0%, #0d47a1 40%, #1565c0 70%, #1976d2 100%);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+
+  &.blob-1 { width: 420px; height: 420px; top: -120px; right: -100px; }
+  &.blob-2 { width: 280px; height: 280px; bottom: 60px; left: -80px; }
+  &.blob-3 { width: 160px; height: 160px; top: 50%; right: 40px; transform: translateY(-50%); }
+  &.blob-4 { width: 100px; height: 100px; top: 180px; left: 120px; background: rgba(255,255,255,0.04); }
+}
+
+.logo-box {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.feature-icon-box {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
