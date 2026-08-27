@@ -129,11 +129,82 @@
       </div>
     </mat-tab>
 
-    <!-- ── Participantes (Sprint 4, fuera de este alcance) ── -->
+    <!-- ── Participantes ── -->
     <mat-tab label="Participantes">
-      <p class="text-sm text-[var(--mat-sys-on-surface-variant)] mt-5">
-        Próximamente — inscripción y seguimiento de participantes.
-      </p>
+      <div class="mt-5">
+        <div class="flex justify-end mb-3">
+          <a mat-stroked-button [routerLink]="['/enrollments/new']" [queryParams]="{ courseId }">
+            <mat-icon>person_add</mat-icon> Inscribir participante
+          </a>
+        </div>
+
+        @if (enrollments().length === 0) {
+          <div
+            class="flex flex-col items-center justify-center gap-2 py-14 text-center
+                   rounded-2xl border border-dashed border-[var(--mat-sys-outline-variant)]"
+          >
+            <mat-icon class="!text-3xl !w-9 !h-9 text-[var(--mat-sys-on-surface-variant)]">
+              group_add
+            </mat-icon>
+            <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+              Todavía no hay participantes inscritos en esta capacitación.
+            </p>
+          </div>
+        } @else {
+          <div class="overflow-x-auto rounded-2xl border border-[var(--mat-sys-outline-variant)]">
+            <table class="w-full text-sm">
+              <thead>
+                <tr
+                  class="text-left text-xs text-[var(--mat-sys-on-surface-variant)]
+                         bg-[var(--mat-sys-surface-container)]"
+                >
+                  <th class="px-4 py-3">Participante</th>
+                  <th class="px-4 py-3">Tipo</th>
+                  <th class="px-4 py-3">Progreso</th>
+                  <th class="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of enrollments(); track row.enrollment.id) {
+                  <tr class="border-t border-[var(--mat-sys-outline-variant)]">
+                    <td class="px-4 py-3">
+                      <p class="font-medium text-[var(--mat-sys-on-surface)]">{{ row.userName }}</p>
+                      <p class="text-xs text-[var(--mat-sys-on-surface-variant)]">{{ row.userEmail }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <app-status-badge
+                        [label]="row.enrollment.type === 'REQUIRED' ? 'Obligatorio' : 'Opcional'"
+                        [variant]="row.enrollment.type === 'REQUIRED' ? 'warning' : 'neutral'"
+                      />
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2 min-w-32">
+                        <div
+                          class="flex-1 h-1.5 rounded-full bg-[var(--mat-sys-surface-container-highest)]
+                                 overflow-hidden"
+                        >
+                          <div
+                            class="h-full bg-[var(--mat-sys-primary)]"
+                            [style.width.%]="row.enrollment.progressPercent"
+                          ></div>
+                        </div>
+                        <span class="text-xs text-[var(--mat-sys-on-surface-variant)]">
+                          {{ row.enrollment.progressPercent }}%
+                        </span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <button mat-icon-button (click)="unenroll(row.enrollment)" aria-label="Desinscribir">
+                        <mat-icon class="!text-[var(--mat-sys-error)]">person_remove</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
     </mat-tab>
 
     <!-- ── Evaluaciones ── -->

@@ -21,7 +21,10 @@ import { CourseRepository } from '../../../shared/repositories/course.repository
 import { CourseModuleRepository } from '../../../shared/repositories/course-module.repository';
 import { CourseMaterialRepository } from '../../../shared/repositories/course-material.repository';
 import { EvaluationRepository } from '../../../shared/repositories/evaluation.repository';
+import { EnrollmentRepository } from '../../../shared/repositories/enrollment.repository';
+import { UserRepository } from '../../../shared/repositories/user.repository';
 import { CompanyContextService } from '../../../core/services/company-context.service';
+import { Enrollment } from '../../../shared/models/enrollment.model';
 import {
   CourseModule,
   CourseMaterial,
@@ -54,6 +57,8 @@ export class CourseDetailComponent {
   private readonly moduleRepo = inject(CourseModuleRepository);
   private readonly materialRepo = inject(CourseMaterialRepository);
   private readonly evaluationRepo = inject(EvaluationRepository);
+  private readonly enrollmentRepo = inject(EnrollmentRepository);
+  private readonly userRepo = inject(UserRepository);
 
   readonly courseId = this.route.snapshot.paramMap.get('id')!;
 
@@ -90,6 +95,19 @@ export class CourseDetailComponent {
   readonly evaluation = computed(() =>
     this.evaluationRepo.all().find((e) => e.courseId === this.courseId)
   );
+
+  readonly enrollments = computed(() => {
+    const users = new Map(this.userRepo.all().map((u) => [u.id, u]));
+    return this.enrollmentRepo
+      .all()
+      .filter((e) => e.courseId === this.courseId)
+      .map((e) => ({
+        enrollment: e,
+        userName: users.get(e.userId)?.displayName ?? '(usuario eliminado)',
+        userEmail: users.get(e.userId)?.email ?? '',
+      }))
+      .sort((a, b) => a.userName.localeCompare(b.userName));
+  });
 
   // ── Módulos ──────────────────────────────────────────────────────────────
 
@@ -197,6 +215,23 @@ export class CourseDetailComponent {
       .afterClosed()
       .subscribe((confirmed) => {
         if (confirmed) this.materialRepo.delete(material.id);
+      });
+  }
+
+  // ── Participantes ────────────────────────────────────────────────────────
+
+  unenroll(enrollment: Enrollment): void {
+    const data: ConfirmDialogData = {
+      title: 'Desinscribir participante',
+      message: '¿Quitar esta inscripción? El participante perderá el acceso a la capacitación.',
+      confirmLabel: 'Desinscribir',
+      danger: true,
+    };
+    this.dialog
+      .open(ConfirmDialogComponent, { data })
+      .afterClosed()
+      .subscribe((confirmed) => {
+        if (confirmed) this.enrollmentRepo.delete(enrollment.id);
       });
   }
 }

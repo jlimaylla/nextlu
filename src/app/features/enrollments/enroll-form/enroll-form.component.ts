@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -38,6 +38,7 @@ import { EnrollmentType } from '../../../shared/models/enrollment.model';
 export class EnrollFormComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly userRepo = inject(UserRepository);
   private readonly courseRepo = inject(CourseRepository);
@@ -70,9 +71,11 @@ export class EnrollFormComponent {
   readonly isSaving = signal(false);
   readonly errorMessage = signal('');
 
+  // Si se navega desde el detalle de una capacitación ("Inscribir participante" en su
+  // tab de Participantes), llega preseleccionada por query param.
   readonly form = this.fb.nonNullable.group({
     userId: ['', Validators.required],
-    courseId: ['', Validators.required],
+    courseId: [this.route.snapshot.queryParamMap.get('courseId') ?? '', Validators.required],
     type: ['REQUIRED' as EnrollmentType, Validators.required],
   });
 
